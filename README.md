@@ -14,6 +14,9 @@ Téma projektu sa zameriava na návrh a implementáciu ETL procesu pre spracovan
   
 ### Účel analýzy:
 Cieľom tohto projektu je identifikácia trendov vo filmovej produkcii, distribúcia hodnotení, štatistiky zárobkov a analýza populárnych žánrov a režisérov. Vďaka ETL procesu a pohľadom projekt umožňuje detailné preskúmanie údajov o filmoch pre prijímanie informovaných rozhodnutí. [Tu](https://github.com/AntaraChat/SQL---IMDb-Movie-Analysis/blob/main/EXECUTIVE%20SUMMARY.pdf) môžete získať odkaz na databázu projektu.
+
+### ERD diagram:
+
 ## 2. Dimenzionalny model
 ## 3. ETL proces v Snowflake
 ## 4. Vizualizacia dat

@@ -17,9 +17,13 @@ Cieľom tohto projektu je identifikácia trendov vo filmovej produkcii, distrib�
 
 ### ERD diagram:
 
-<img src="./IMDB_ERD.png/> 
-:-:
-*Obrazok 1: Entitno-relacna schema MovieLens*
+<p>
+  <img src="https://github.com/Anna-Cherkashchenko/ETL-proces-datasetu-IMDB/blob/main/IMDB_ERD.png">
+</p>
+<p align="center">
+  Obrázok 1: Entitno-relačná schéma IMDB
+</p>
+
 
 ## 2. Dimenzionalny model
 ## 3. ETL proces v Snowflake

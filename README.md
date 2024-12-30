@@ -17,6 +17,9 @@ Cieľom tohto projektu je identifikácia trendov vo filmovej produkcii, distrib�
 
 ### ERD diagram:
 
+<img src="./IMDB_ERD.png/> 
+:-:
+*Obrazok 1: Entitno-relacna schema MovieLens*
 
 ## 2. Dimenzionalny model
 ## 3. ETL proces v Snowflake

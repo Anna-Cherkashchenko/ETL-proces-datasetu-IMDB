@@ -145,8 +145,9 @@ DROP TABLE IF EXISTS director_mapping_staging;
 DROP TABLE IF EXISTS role_mapping_staging;
 DROP TABLE IF EXISTS ratings_staging;
 
-CREATE OR REPLACE VIEW genre_movie_count AS
+CREATE OR REPLACE VIEW year_genre_movie_count AS
 SELECT 
+    m.year,
     g.genre,
     COUNT(g.dim_movie_id) AS movie_count
 FROM 
@@ -154,33 +155,9 @@ FROM
 JOIN 
     dim_movies m ON g.dim_movie_id = m.dim_movie_id
 GROUP BY 
-    g.genre
+    m.year, g.genre
 ORDER BY 
-    movie_count DESC;
-
-CREATE OR REPLACE VIEW director_popularity AS
-SELECT 
-    d.name AS director_name,
-    COUNT(f.fact_movie_id) AS movie_count
-FROM 
-    dim_directors d
-JOIN 
-    fact_ratings f ON d.dim_director_id = f.director_dim_id
-GROUP BY 
-    d.name
-ORDER BY 
-    movie_count DESC;
-
-CREATE OR REPLACE VIEW genre_proportions AS
-SELECT 
-    g.genre,
-    COUNT(g.dim_movie_id) AS movie_count
-FROM 
-    dim_genres g
-JOIN 
-    dim_movies m ON g.dim_movie_id = m.dim_movie_id
-GROUP BY 
-    g.genre;
+    m.year, movie_count DESC;
 
 CREATE OR REPLACE VIEW rating_distribution AS
 SELECT
@@ -194,6 +171,30 @@ GROUP BY
     FLOOR(avg_rating)
 ORDER BY 
     rating_range;
+
+CREATE OR REPLACE VIEW genre_proportions AS
+SELECT 
+    g.genre,
+    COUNT(g.dim_movie_id) AS movie_count
+FROM 
+    dim_genres g
+JOIN 
+    dim_movies m ON g.dim_movie_id = m.dim_movie_id
+GROUP BY 
+    g.genre;
+
+CREATE OR REPLACE VIEW director_popularity AS
+SELECT 
+    d.name AS director_name,
+    COUNT(f.fact_movie_id) AS movie_count
+FROM 
+    dim_directors d
+JOIN 
+    fact_ratings f ON d.dim_director_id = f.director_dim_id
+GROUP BY 
+    d.name
+ORDER BY 
+    movie_count DESC;
 
 CREATE OR REPLACE VIEW duration_vs_rating AS
 SELECT 

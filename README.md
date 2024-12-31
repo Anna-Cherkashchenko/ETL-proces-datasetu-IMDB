@@ -24,8 +24,37 @@ Cieľom tohto projektu je identifikácia trendov vo filmovej produkcii, distrib�
   Obrázok 1: Entitno-relačná schéma IMDB
 </p>
 
-
 ## 2. Dimenzionalny model
+
+### Faktová tabuľka: `fact_ratings`
+Hlavné metriky:
+- avg_rating: Priemerné hodnotenie filmu.
+- total_votes: Celkový počet hlasov (hodnotení) pre daný film.
+- median_rating: Mediánové hodnotenie filmu.
+
+Kľúče:
+- fact_movie_id: Primárny kľúč pre identifikáciu faktov v tabuľke.
+- movie_dim_id, director_dim_id: Cudzie kľúče prepojené na dimenzie dim_movies a dim_directors.
+
+### Dimenzie:
+1. Dimenzia `dim_movies`
+   
+Údaje:
+- dim_movie_id: Primárny kľúč pre identifikáciu filmu.
+- title: Názov filmu.
+- year: Rok vydania filmu.
+- duration: Dĺžka filmu (v minútach).
+- worlwide_gross_income: Celkové príjmy z predaja filmu na celom svete.
+- production_company: Produkčná spoločnosť, ktorá vytvorila film.
+  
+Vzťah s faktovou tabuľkou:
+Prepojená prostredníctvom cudzieho kľúča movie_dim_id v `fact_ratings`.
+
+Typ dimenzie:
+SCD Type 1: filmy, ich aktuálne údaje (aktuálne informácie bez histórie).
+
+
+
 ## 3. ETL proces v Snowflake
 ## 4. Vizualizacia dat
 

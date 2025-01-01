@@ -75,7 +75,6 @@ Prepojená nepriamo cez `bridge_dim_movies_dim_genres`, ktorá spája žánre s 
 Typ dimenzie: SCD Type 1: žánre bez histórie zmien (aktuálne informácie bez histórie).
 
 ### Bridge tabuľka: `bridge_dim_movies_dim_genres`
-
 Údaje:
 - dim_genres_dim_movie_id: ID žánru.
 - dim_movies_dim_movie_id: ID filmu.
@@ -84,5 +83,111 @@ Vzťah s faktovou tabuľkou:
 Nepriame prepojenie cez tabuľku `dim_genres` a `dim_movies`.
 
 ## 3. ETL proces v Snowflake
+ETL (Extract, Transform, Load) je trojstupňový proces správy dát, ktorý v doslovnom preklade znamená „extrahovanie, transformácia, načítanie“. Tento proces som vytvorila v Snowflake s cieľom pripraviť zdrojové dáta zo staging vrstvy (dočasná vrstva v systéme ukladania alebo spracovania dát, ktorá sa používa na medziskladovanie surových dát pred ich transformáciou) do viacdimenzionálneho modelu, ktorý je vhodný na analýzu a vizualizáciu.
+### 1. Extract
+Najprv som vytvorila tabuľky na načítanie údajov. Jeden z príkladov:
+
+```sql
+CREATE OR REPLACE TABLE names_staging (
+    id VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(100),
+    height INT,
+    date_of_birth DATE,
+    known_for_movies VARCHAR(100)
+);
+```
+
+Potom som nahrala súbory do Snowflake vo formáte `CSV` cez interné stage úložisko s názvom `my_stage`.
+
+```sql
+CREATE OR REPLACE STAGE my_stage FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"');
+```
+
+Pomocou príkazu `COPY INTO` som nahrala dáta z CSV súborov do tabuliek: 
+
+```sql
+COPY INTO names_staging
+FROM @my_stage/names.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1 NULL_IF = ('NULL'));
+```
+
+Prehľad dát v tabuľkách:
+
+```sql
+SELECT * FROM names_staging;
+```
+### 2. Transform
+На tomto etape bolo najprv potrebné vytvoriť dimenzie.  
+
+1. `dim_movies`  
+Tabuľka `dim_movies` obsahuje informácie o filmoch. Bola vytvorená na základe údajov z tabuľky `movie_staging`.
+
+```sql
+CREATE TABLE dim_movies AS
+SELECT DISTINCT
+    m.id AS dim_movie_id,
+    m.title,
+    m.year,
+    m.date_published,
+    m.duration,
+    m.worlwide_gross_income,
+    m.production_company
+FROM movie_staging m;
+```
+
+2. `dim_directors`  
+Tabuľka `dim_directors` obsahuje informácie o režiséroch. Bola vytvorená spojením tabuľky `names_staging` s tabuľkou `director_mapping_staging`.  
+
+```sql
+CREATE TABLE dim_directors AS
+SELECT DISTINCT
+    n.id AS dim_director_id,
+    n.name,
+FROM names_staging n
+JOIN director_mapping_staging dm ON n.id = dm.name_id;
+```
+
+3. `dim_genres`
+Tabuľka `dim_genres` obsahuje žánre filmov. Bola vytvorená na základe tabuľky `genre_staging`, ktorá obsahuje prepojenie medzi filmami a žánrami.
+
+```sql
+CREATE TABLE dim_genres AS
+SELECT DISTINCT
+    g.movie_id AS dim_movie_id,
+    g.genre
+FROM genre_staging g;
+```
+
+A po tom som vytvorila hlavnú tabuľku `fact_ratings`.  
+
+Tabuľka `fact_ratings` obsahuje informácie o hodnoteniach filmov. Bola vytvorená spojením tabuľky `ratings_staging` s tabuľkami `dim_movies` a `dim_directors`, aby sa prepojila informácia o filmoch a ich režiséroch s hodnoteniami.
+
+```sql
+CREATE TABLE fact_ratings AS
+SELECT DISTINCT
+    r.movie_id AS fact_movie_id,
+    r.avg_rating,
+    r.total_votes,
+    r.median_rating,
+    d.dim_movie_id AS movie_dim_id,
+    dr.dim_director_id AS director_dim_id
+FROM ratings_staging r
+LEFT JOIN dim_movies d ON r.movie_id = d.dim_movie_id
+LEFT JOIN director_mapping_staging dm ON r.movie_id = dm.movie_id
+LEFT JOIN dim_directors dr ON dm.name_id = dr.dim_director_id;
+```
+
+Prehľad dát v tabuľkách:
+
+```sql
+SELECT * FROM dim_movies;
+```
+
+### 3. Load
+Po vytvorení dimenzií a faktovej tabuľky boli dáta nahraté do finálnej štruktúry. Na záver boli staging tabuľky odstránené, aby sa optimalizovalo využitie úložiska:
+```sql
+DROP TABLE IF EXISTS names_staging;
+```
+
 ## 4. Vizualizacia dat
 

@@ -25,7 +25,7 @@ Cieľom tohto projektu je identifikácia trendov vo filmovej produkcii, distrib�
 </p>
 
 ## 2. Dimenzionalny model
-
+Vypracovala som hviezdicový model (star schema) na analýzu údajov.
 ### Faktová tabuľka: `fact_ratings`
 Hlavné metriky:
 - avg_rating: Priemerné hodnotenie filmu.

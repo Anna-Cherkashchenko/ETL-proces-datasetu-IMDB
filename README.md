@@ -198,23 +198,59 @@ SELECT DISTINCT
 FROM genre_staging g;
 ```
 
-A po tom som vytvorila hlavnú tabuľku `fact_ratings`.  
+4. `dim_roles`
 
-Tabuľka `fact_ratings` obsahuje informácie o hodnoteniach filmov. Bola vytvorená spojením tabuľky `ratings_staging` s tabuľkami `dim_movies` a `dim_directors`, aby sa prepojila informácia o filmoch a ich režiséroch s hodnoteniami.
+Tabuľka `dim_roles` obsahuje informácie o rolách hercov vo filmoch. Bola vytvorená spojením tabuľky `names_staging` s tabuľkou `role_mapping_staging`, ktorá prepojuje hercov s ich rolami.
 
 ```sql
-CREATE TABLE fact_ratings AS
+CREATE TABLE dim_roles AS
 SELECT DISTINCT
-    r.movie_id AS fact_movie_id,
+    n.id AS dim_roles_id,
+    n.name,
+    rm.category
+FROM names_staging n
+JOIN role_mapping_staging rm ON n.id = rm.name_id;
+```
+
+5. `dim_date`
+
+Tabuľka `dim_date` obsahuje informácie o dátumoch zverejnenia filmov. Bola vytvorená z tabuľky `movie_staging` a zahŕňa rôzne aspekty dátumov.
+
+```sql
+CREATE OR REPLACE TABLE dim_date AS
+SELECT DISTINCT
+    ROW_NUMBER() OVER (ORDER BY CAST(date_published AS DATE)) AS dim_date_id,
+    date_published AS full_date,   
+    DAY(date_published) AS day,    
+    WEEK(date_published) AS week,  
+    MONTH(date_published) AS month,
+    YEAR(date_published) AS year   
+FROM 
+    movie_staging;
+```
+
+A po tom som vytvorila hlavnú tabuľku `fact_ratings`.  
+
+Tabuľka `fact_ratings` obsahuje informácie o hodnoteniach filmov. Bola vytvorená spojením tabuľky `ratings_staging` s tabuľkami `dim_movies`, `dim_directors`, `dim_date` a `dim_roles`.
+
+```sql
+CREATE OR REPLACE TABLE fact_ratings AS
+SELECT DISTINCT
+    r.movie_id AS fact_rating_id,
     r.avg_rating,
     r.total_votes,
     r.median_rating,
-    d.dim_movie_id AS movie_dim_id,
-    dr.dim_director_id AS director_dim_id
+    d.dim_movie_id AS dim_movie_id,
+    dr.dim_director_id AS dim_director_id,
+    da.full_date AS date_published,
+    rol.dim_roles_id AS dim_roles_id
 FROM ratings_staging r
 LEFT JOIN dim_movies d ON r.movie_id = d.dim_movie_id
 LEFT JOIN director_mapping_staging dm ON r.movie_id = dm.movie_id
-LEFT JOIN dim_directors dr ON dm.name_id = dr.dim_director_id;
+LEFT JOIN dim_directors dr ON dm.name_id = dr.dim_director_id
+LEFT JOIN dim_date da ON d.date_published = da.full_date
+LEFT JOIN role_mapping_staging rm ON r.movie_id = rm.movie_id 
+LEFT JOIN dim_roles rol ON rm.name_id = rol.dim_roles_id;
 ```
 
 Prehľad dát v tabuľkách:

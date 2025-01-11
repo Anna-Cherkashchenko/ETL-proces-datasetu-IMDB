@@ -26,7 +26,7 @@ Cieľom tohto projektu je identifikácia trendov vo filmovej produkcii, distrib�
 
 ## 2. Dimenzionalny model
 <p>
-  <img src="">
+  <img src="https://github.com/Anna-Cherkashchenko/ETL-proces-datasetu-IMDB/blob/main/star_schema_imdb.png">
 </p>
 <p align="center">
   Obrazok 2: Star schema IMDB
@@ -40,8 +40,11 @@ Hlavné metriky:
 - median_rating: Mediánové hodnotenie filmu.
 
 Kľúče:
-- fact_movie_id: Primárny kľúč pre identifikáciu faktov v tabuľke.
-- movie_dim_id, director_dim_id: Cudzie kľúče prepojené na dimenzie `dim_movies` a `dim_directors`.
+- fact_rating_id: Primárny kľúč pre identifikáciu faktov v tabuľke.
+- dim_movie_id: Cudzí kľúč prepojený na dimenziu `dim_movies`, ktorý identifikuje konkrétny film.
+- dim_director_id: Cudzí kľúč prepojený na dimenziu `dim_directors`, ktorý identifikuje režiséra daného filmu.
+- date_published: Dátum zverejnenia filmu, prepojený na dimenziu `dim_date`.
+- dim_roles_id: Cudzí kľúč prepojený na dimenziu `dim_roles`, ktorý identifikuje rolu, ktorú hrá herec vo filme.
 
 ### Dimenzie:
 1. Dimenzia `dim_movies`
@@ -80,6 +83,33 @@ Vzťah s faktovou tabuľkou:
 Prepojená nepriamo cez `bridge_dim_movies_dim_genres`, ktorá spája žánre s filmami.
 
 Typ dimenzie: SCD Type 1: žánre bez histórie zmien (aktuálne informácie bez histórie).
+
+4. Dimenzia `dim_roles`
+
+Údaje:
+- dim_roles_id: Primárny kľúč, identifikátor roly.
+- name: Meno osoby, ktorá hrá rolu.
+- category: Kategória roly (hlavná, vedľajšia atď.).
+
+Vzťah s faktovou tabuľkou:
+Prepojená priamo cez dim_roles_id, ktorý sa spája s `dim_roles`.
+
+Typ dimenzie: SCD Type 1 (aktuálne informácie bez histórie).
+
+5. Dimenzia `dim_date`
+
+Údaje:
+- dim_date_id: Primárny kľúč, identifikátor dátumu.
+- full_date: Celý dátum.
+- day: Deň.
+- week: Týždeň.
+- month: Mesiac.
+- year: Rok.
+
+Vzťah s faktovou tabuľkou:
+Prepojená priamo cez date_published, ktorý sa spája s full_date v `dim_date`.
+
+Typ dimenzie: SCD Type 1 (aktuálne informácie bez histórie).
 
 ### Bridge tabuľka: `bridge_dim_movies_dim_genres`
 Údaje:

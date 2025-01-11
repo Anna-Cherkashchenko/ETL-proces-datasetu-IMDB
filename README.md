@@ -26,7 +26,7 @@ Cieľom tohto projektu je identifikácia trendov vo filmovej produkcii, distrib�
 
 ## 2. Dimenzionalny model
 <p>
-  <img src="https://github.com/Anna-Cherkashchenko/ETL-proces-datasetu-IMDB/blob/main/star_schema_imdb.png">
+  <img src="">
 </p>
 <p align="center">
   Obrazok 2: Star schema IMDB
